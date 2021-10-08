@@ -10,6 +10,7 @@ from torch.autograd import Variable
 from torch.utils.data.dataloader import DataLoader
 from Model2 import CustomModel2
 from Model import CustomModel
+from DecryptionModel import DecryptionModel
 from DataLoader import LoadImages
 
 
@@ -92,7 +93,7 @@ def train_optim(model, device, epochs, log_frequency, learning_rate=1e-4):
 
             if batch_id % log_frequency == 0:
                 print(
-                    "epoch: {:03d}, batch: {:03d}, loss: {:.12f}, time: {:.3f}".format(epoch + 1, batch_id + 1,
+                    "epoch: {:03d}, batch: {:03d}, loss: {:.3f}, time: {:.3f}".format(epoch + 1, batch_id + 1,
                                                                                       loss.item(),
                                                                                       time.time() - start))
 
@@ -108,16 +109,17 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(1234)
     o_dataset = "./dataset/train_original_tiny.npy"
-    t_dataset = "./dataset/train_1A_tiny.npy"
+    t_dataset = "./dataset/train_2_tiny.npy"
     dataset = LoadImages(t_dataset, o_dataset)
     batch_size = 16
+    # dataloader = DataLoader(dataset, batch_size, shuffle=True)
     trainloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=2)
     testloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=2)
     model = CustomModel()
     nb_epoch = 3
     log_frequency = 10
     learning_rate = 1e-4
-    #model.load_state_dict(torch.load("./modeltrained/modelTrained_2_Tiny_3epoch.pt"))
-    train_optim(model, device, nb_epoch, log_frequency, learning_rate)
-    #torch.save(model.state_dict(), './modeltrained/modelTrained_1A_3epoch.pt')
+    model.load_state_dict(torch.load("./modeltrained/modelTrained_2_Tiny_3epoch.pt"))
+    #train_optim(model, device, nb_epoch, log_frequency, learning_rate)
+    #torch.save(model.state_dict(), './modeltrained/modelTrained_2_Tiny_3epoch.pt')
     eval(model, device, testloader, batch_size, 10)
