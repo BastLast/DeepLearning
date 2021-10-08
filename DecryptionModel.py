@@ -14,7 +14,7 @@ class DecryptionModel(nn.Module):
         # self.unFlatten = nn.UnFlatten()
 
     def forward(self, x):
-        # print("x shape : {}".format(x.shape))
+        print("x shape : {}".format(x.shape))
         x = self.conv1(x)
         # print("x shape : {}".format(x.shape))
         # x = self.flatten(x)
