@@ -27,7 +27,7 @@ def adjust_learning_rate(optimizer, epoch):
 
 def eval(model, device, dataset_evaluated, batch_size, nb_image_to_print):
     if nb_image_to_print > batch_size:
-        nb_image_to_print=batch_size
+        nb_image_to_print = batch_size
     model.to(device)
     model.eval()
     loss_fn = torch.nn.L1Loss()
@@ -60,7 +60,7 @@ def eval(model, device, dataset_evaluated, batch_size, nb_image_to_print):
                 ax.set_title("Predicted")
                 idx += 1
                 plt.show()
-            print("Metric for a batch: " + str(val.item()) + "loss:{:.12f}",  loss.item())
+            print("Metric for a batch: " + str(val.item()) + "loss:{:.12f}", loss.item())
             print("Moyenne du batch par image: " + str(val.item() / batch_size))
             general_avg = general_avg + (val.item() / batch_size)
     print("Moyenne general d'une image sur le dataset évalué: " + str(general_avg / i))
@@ -83,7 +83,6 @@ def train_optim(model, device, epochs, log_frequency, learning_rate=1e-4):
 
         start = time.time()  # start timer
 
-
         # At each epoch, the training set will be processed as a set of batches
         for batch_id, batch in enumerate(trainloader):
 
@@ -98,7 +97,7 @@ def train_optim(model, device, epochs, log_frequency, learning_rate=1e-4):
 
             if batch_id % log_frequency == 0:
                 print(
-                    "epoch: {:03d}, batch: {:03d}, loss: {:.12f}, time: {:.3f}".format(epoch + 1, batch_id + 1,
+                    "epoch: {:03d}, batch: {:03d}, loss: {:.3f}, time: {:.3f}".format(epoch + 1, batch_id + 1,
                                                                                       loss.item(),
                                                                                       time.time() - start))
 
@@ -107,7 +106,7 @@ def train_optim(model, device, epochs, log_frequency, learning_rate=1e-4):
 
             optimizer.step()  # update the model parameters using the gradient
 
-        #validation
+        # validation
         for batch_id, batch in enumerate(valloader):
             model.eval()
             images, labels = Variable(batch[0] / 255), Variable(batch[1] / 255, requires_grad=False)
@@ -125,22 +124,24 @@ def train_optim(model, device, epochs, log_frequency, learning_rate=1e-4):
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(1234)
-    #o_dataset = "./dataset/test_original.npy"
-    #t_dataset = "./dataset/test_1A.npy"
+    o_dataset_test = "./dataset/test_original.npy"
+    t_dataset_test = "./dataset/test_1A.npy"
     o_dataset = "./dataset/train_original_tiny.npy"
-    t_dataset = "./dataset/train_1A_tiny.npy"
+    t_dataset = "./dataset/train_2_tiny.npy"
     dataset = LoadImages(t_dataset, o_dataset)
+    dataset_test = LoadImages(t_dataset_test, o_dataset_test)
     trainsize = int(len(dataset) * 80 / 100)
     valsize = int(len(dataset) - trainsize)
     train_set, val_set = torch.utils.data.random_split(dataset, lengths=[trainsize, valsize])
     batch_size = 16
     valloader = DataLoader(val_set, batch_size, shuffle=True)
     trainloader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=2)
-    model = CustomModel()
+    testloader = DataLoader(dataset_test, batch_size=batch_size, shuffle=False, num_workers=2)
+    model = DecryptionModel()
     nb_epoch = 3
     log_frequency = 10
     learning_rate = 1e-4
-    #model.load_state_dict(torch.load("./modeltrained/1A_Tiny_3epoch_model.pt"))
+    # model.load_state_dict(torch.load("./modeltrained/1A_Tiny_3epoch_model.pt"))
     train_optim(model, device, nb_epoch, log_frequency, learning_rate)
-    torch.save(model.state_dict(), './modeltrained/1A_Tiny_3epoch_model.pt')
-    #eval(model, device, testloader, batch_size, 10)
+    # torch.save(model.state_dict(), './modeltrained/1A_Tiny_3epoch_model.pt')
+    eval(model, device, testloader, batch_size, 10)
