@@ -120,7 +120,8 @@ def train_optim(model, device, epochs, log_frequency, learning_rate=1e-4):
             else:
                 loss_sup_in_a_row = 0
 
-def main_dataset_2():
+
+if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(1234)
     o_dataset_test = "./dataset/test_original.npy"
@@ -136,8 +137,6 @@ def main_dataset_2():
     valloader = DataLoader(val_set, batch_size, shuffle=True)
     trainloader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=2)
     testloader = DataLoader(dataset_test, batch_size=batch_size, shuffle=False, num_workers=2)
-    print(dataset.original_dataset.shape)
-    return
     model = DecryptionModel()
     nb_epoch = 3
     log_frequency = 10
@@ -146,29 +145,3 @@ def main_dataset_2():
     train_optim(model, device, nb_epoch, log_frequency, learning_rate)
     # torch.save(model.state_dict(), './modeltrained/1A_Tiny_3epoch_model.pt')
     eval(model, device, testloader, batch_size, 10)
-
-if __name__ == '__main__':
-    main_dataset_2()
-    """device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    torch.manual_seed(1234)
-    o_dataset_test = "./dataset/test_original.npy"
-    t_dataset_test = "./dataset/test_1A.npy"
-    o_dataset = "./dataset/train_original_tiny.npy"
-    t_dataset = "./dataset/train_2_tiny.npy"
-    dataset = LoadImages(t_dataset, o_dataset)
-    dataset_test = LoadImages(t_dataset_test, o_dataset_test)
-    trainsize = int(len(dataset) * 80 / 100)
-    valsize = int(len(dataset) - trainsize)
-    train_set, val_set = torch.utils.data.random_split(dataset, lengths=[trainsize, valsize])
-    batch_size = 16
-    valloader = DataLoader(val_set, batch_size, shuffle=True)
-    trainloader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=2)
-    testloader = DataLoader(dataset_test, batch_size=batch_size, shuffle=False, num_workers=2)
-    model = DecryptionModel()
-    nb_epoch = 3
-    log_frequency = 10
-    learning_rate = 1e-4
-    # model.load_state_dict(torch.load("./modeltrained/1A_Tiny_3epoch_model.pt"))
-    train_optim(model, device, nb_epoch, log_frequency, learning_rate)
-    # torch.save(model.state_dict(), './modeltrained/1A_Tiny_3epoch_model.pt')
-    eval(model, device, testloader, batch_size, 10)"""

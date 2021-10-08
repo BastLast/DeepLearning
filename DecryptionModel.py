@@ -15,17 +15,31 @@ class DecryptionModel(nn.Module):
 
     def forward(self, x):
         print("x shape : {}".format(x.shape))
-        x = self.conv1(x)
-        # print("x shape : {}".format(x.shape))
-        # x = self.flatten(x)
-        # print("x shape : {}".format(x.shape))
-        # x = self.linear(x)
-        # print("x shape : {}".format(x.shape))
-        x = self.relu1(x)
-        # print("x shape : {}".format(x.shape))
-        # x = torch.reshape(x, [x.shape[0], 1, 96, 96])
+        x = x.permute(1, 0, 2, 3)
         print("x shape : {}".format(x.shape))
-        x = self.conv2(x)
-        print("x shape : {}".format(x.shape))
+        blue = x[0]
+        green = x[1]
+        red = x[2]
+        print("blue shape : {}".format(blue.shape))
+        blue = self.flatten(blue)
+        blue = self.linear(blue)
+        blue = self.relu1(blue)
 
+        green = self.flatten(green)
+        green = self.linear(green)
+        green = self.relu1(green)
+
+        red = self.flatten(red)
+        red = self.linear(red)
+        red = self.relu1(red)
+
+        blue = torch.reshape(blue, [blue.shape[0], 96, 96])
+        green = torch.reshape(green, [green.shape[0], 96, 96])
+        red = torch.reshape(red, [red.shape[0], 96, 96])
+        print("blue shape : {}".format(blue.shape))
+        print("x shape : {}".format(x.shape))
+        x = torch.stack((blue, green, red))
+        print("x shape : {}".format(x.shape))
+        x = x.permute(1, 0, 2, 3)
+        print("x shape : {}".format(x.shape))
         return x
