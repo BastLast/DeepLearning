@@ -22,13 +22,6 @@ def adjust_learning_rate(optimizer, epoch):
     return lr
 
 
-def output_psnr_mse(img_orig, img_out):
-    squared_error = np.square(img_orig - img_out)
-    mse = np.mean(squared_error)
-    psnr = 10 * np.log10(1.0 / mse)
-    return psnr
-
-
 def eval(model, device, dataset_evaluated, batch_size, nb_image_to_print):
     model.to(device)
     model.eval()
@@ -114,7 +107,7 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(1234)
     o_dataset = "./dataset/train_original_tiny.npy"
-    t_dataset = "./dataset/train_1B_tiny.npy"
+    t_dataset = "./dataset/train_2_tiny.npy"
     dataset = LoadImages(t_dataset, o_dataset)
     batch_size = 16
     # dataloader = DataLoader(dataset, batch_size, shuffle=True)
@@ -124,8 +117,7 @@ if __name__ == '__main__':
     nb_epoch = 3
     log_frequency = 10
     learning_rate = 1e-4
-
-    #model.load_state_dict(torch.load("./modeltrained/mymodelall.pt"))
-    train_optim(model, device, nb_epoch, log_frequency, learning_rate)
-    torch.save(model.state_dict(), './modeltrained/mymodelall1B.pt')
-    eval(model, device, testloader, batch_size, 2)
+    model.load_state_dict(torch.load("./modeltrained/modelTrained_2_Tiny_3epoch.pt"))
+    #train_optim(model, device, nb_epoch, log_frequency, learning_rate)
+    #torch.save(model.state_dict(), './modeltrained/modelTrained_2_Tiny_3epoch.pt')
+    eval(model, device, testloader, batch_size, 10)
