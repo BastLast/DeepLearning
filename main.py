@@ -29,6 +29,45 @@ def output_psnr_mse(img_orig, img_out):
     return psnr
 
 
+def eval(model, device, dataset_evaluated, batch_size, nb_image_to_print):
+    model.to(device)
+    model.eval()
+    with torch.no_grad():
+        general_avg = 0.0
+        avg_elapsed_time = 0.0
+        i = 0
+        for batch_id, batch in enumerate(dataset_evaluated):
+            i += 1
+            images, labels = batch
+            images, labels = images.to(device), labels.to(device)
+            start_time = time.time()
+            out_pred = model(images)
+            elapsed_time = time.time() - start_time
+            avg_elapsed_time += elapsed_time
+            val = torch.abs(labels - out_pred).sum().cpu()
+            if i<nb_image_to_print:
+                fig, axes = plt.subplots(nrows=1, ncols=3, sharex=True, sharey=True, figsize=(12, 4))
+                idx = 1
+                ax = fig.add_subplot(1, 3, idx, xticks=[], yticks=[])
+                plt.imshow(labels[i].cpu().permute(1, 2, 0))
+                ax.set_title("Labels")
+                idx += 1
+                ax = fig.add_subplot(1, 3, idx, xticks=[], yticks=[])
+                plt.imshow(images[i].cpu().permute(1, 2, 0))
+                ax.set_title("Images")
+                idx += 1
+                ax = fig.add_subplot(1, 3, idx, xticks=[], yticks=[])
+                plt.imshow(out_pred[i].cpu().permute(1, 2, 0))
+                ax.set_title("Predicted")
+                idx += 1
+                plt.show()
+            print("Metric for a batch: " + str(val))
+            print("Moyenne du batch par image: " + str(val / batch_size))
+            general_avg = general_avg + (val / batch_size)
+    print("Moyenne general d'une image sur le dataset évalué: " + str(general_avg / i))
+
+
+
 def train_optim(model, device, epochs, log_frequency, learning_rate=1e-4):
     model.to(device)  # we make sure the model is on the proper device
 
@@ -69,49 +108,13 @@ def train_optim(model, device, epochs, log_frequency, learning_rate=1e-4):
             optimizer.step()  # update the model parameters using the gradient
 
 
-        # Model evaluation after each step computing the accuracy
-        model.eval()
-        total = 0
-        correct = 0
-        with torch.no_grad():
-            avg_psnr_predicted = 0.0
-            avg_psnr_noisy = 0.0
-            avg_elapsed_time = 0.0
-            ct = 0.0
-            for batch_id, batch in enumerate(testloader):
-                images, labels = batch
-                images, labels = images.to(device), labels.to(device)
-                start_time = time.time()
-                out_pred = model(images)
-                elapsed_time = time.time() - start_time
-                avg_elapsed_time += elapsed_time
-                val = torch.abs(labels - out_pred).sum()
-                print(val)
-                if epoch == 3:
-                    plt.figure(1)
-                    plt.imshow(images[0].cpu().permute(1, 2, 0))
-                    plt.figure(2)
-                    plt.imshow(labels[0].cpu().permute(1, 2, 0))
-                    plt.figure(3)
-                    plt.imshow(out_pred[0].cpu().permute(1, 2, 0))
-                    plt.show()
-                '''
 
-
-        avg_psnr_predicted = avg_psnr_predicted / ct
-        avg_psnr_noisy = avg_psnr_noisy / ct
-
-        print("PSNR_noisy=", avg_psnr_noisy)
-        print("PSNR_predicted=", avg_psnr_predicted)
-        '''
-
-    torch.save(model.state_dict(), './modeltrained')
 
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(1234)
     o_dataset = "./dataset/train_original_tiny.npy"
-    t_dataset = "./dataset/train_1A_tiny.npy"
+    t_dataset = "./dataset/train_1B_tiny.npy"
     dataset = LoadImages(t_dataset, o_dataset)
     batch_size = 16
     # dataloader = DataLoader(dataset, batch_size, shuffle=True)
@@ -121,4 +124,8 @@ if __name__ == '__main__':
     nb_epoch = 3
     log_frequency = 10
     learning_rate = 1e-4
+
+    #model.load_state_dict(torch.load("./modeltrained/mymodelall.pt"))
     train_optim(model, device, nb_epoch, log_frequency, learning_rate)
+    torch.save(model.state_dict(), './modeltrained/mymodelall1B.pt')
+    eval(model, device, testloader, batch_size, 2)
