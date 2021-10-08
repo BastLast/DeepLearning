@@ -26,17 +26,21 @@ def adjust_learning_rate(optimizer, epoch):
 
 
 def eval(model, device, dataset_evaluated, batch_size, nb_image_to_print):
+    if nb_image_to_print > batch_size:
+        nb_image_to_print=batch_size
     model.to(device)
     model.eval()
     loss_fn = torch.nn.L1Loss()
     loss_fn.to(device)
     with torch.no_grad():
         general_avg = 0.0
+        avg_elapsed_time = 0.0
         i = 0
         for batch_id, batch in enumerate(dataset_evaluated):
             i += 1
             images, labels = batch
             images, labels = images.to(device), labels.to(device)
+            start_time = time.time()
             out_pred = model(images)
             loss = loss_fn(out_pred, labels)
             val = torch.abs(labels - out_pred).sum().cpu()
