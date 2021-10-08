@@ -117,11 +117,11 @@ if __name__ == '__main__':
     trainloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=2)
     testloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=2)
     # model = CustomModel()
-    model = CustomModel2()
+    model = CustomModel2(1024)
     nb_epoch = 3
     log_frequency = 10
     learning_rate = 1e-4
-    model.load_state_dict(torch.load("./modeltrained/modelTrained_2_Tiny_3epoch.pt"))
-    #train_optim(model, device, nb_epoch, log_frequency, learning_rate)
-    #torch.save(model.state_dict(), './modeltrained/modelTrained_2_Tiny_3epoch.pt')
+    #model.load_state_dict(torch.load("./modeltrained/modelTrained_2_Tiny_3epoch.pt"))
+    train_optim(model, device, nb_epoch, log_frequency, learning_rate)
+    torch.save(model.state_dict(), './modeltrained/model2.pt')
     eval(model, device, testloader, batch_size, 10)
