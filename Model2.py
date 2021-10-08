@@ -4,9 +4,9 @@ import torch.nn as nn
 # pixelshuffle https://pytorch.org/docs/stable/generated/torch.nn.PixelShuffle.html
 # prelu instead of relu https://medium.com/@shoray.goel/prelu-activation-e294bb21fefa
 # torch.add https://pytorch.org/docs/stable/generated/torch.add.html
-class _Residual_Block(nn.Module):
+class ConvRelu(nn.Module):
     def __init__(self):
-        super(_Residual_Block, self).__init__()
+        super(ConvRelu, self).__init__()
 
         self.conv1 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1, bias=False)
         self.relu2 = nn.PReLU()
@@ -74,9 +74,9 @@ class _Residual_Block(nn.Module):
 
         return out
 
-class Recon_Block(nn.Module):
+class ConvRelu256(nn.Module):
     def __init__(self):
-        super(Recon_Block, self).__init__()
+        super(ConvRelu256, self).__init__()
 
         self.conv1 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1, bias=False)
         self.relu2 = nn.PReLU()
@@ -123,24 +123,24 @@ class Recon_Block(nn.Module):
 
         return output
 
-class CustomModel(nn.Module):
+class CustomModel2(nn.Module):
     def __init__(self):
-        super(CustomModel, self).__init__()
-        self.conv_input = nn.Conv2d(in_channels=3, out_channels=256, kernel_size=3, stride=1, padding=1, bias=False)
+        super(CustomModel2, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=256, kernel_size=3, stride=1, padding=1, bias=False)
         self.relu1 = nn.PReLU()
-        self.conv_down = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=1, bias=False)
+        self.conv2 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=2, padding=1, bias=False)
         self.relu2 = nn.PReLU()
 
-        self.residualA = _Residual_Block()
-        self.residualB = _Residual_Block()
-        self.residualC = _Residual_Block()
+        self.convReluA = ConvRelu()
+        self.convReluB = ConvRelu()
+        self.convReluC = ConvRelu()
 
-        self.recon = Recon_Block()
+        self.convRelu256 = ConvRelu256()
         # concat
 
-        self.conv_mid = nn.Conv2d(in_channels=768, out_channels=256, kernel_size=1, stride=1, padding=0, bias=False)
+        self.conv3 = nn.Conv2d(in_channels=768, out_channels=256, kernel_size=1, stride=1, padding=0, bias=False)
         self.relu3 = nn.PReLU()
-        self.conv_mid2 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv4 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=1, bias=False)
         self.relu4 = nn.PReLU()
 
         self.subpixel = nn.PixelShuffle(2)
@@ -148,21 +148,21 @@ class CustomModel(nn.Module):
 
     def forward(self, x):
         item = x
-        out = self.relu1(self.conv_input(x))
-        out = self.relu2(self.conv_down(out))
+        out = self.relu1(self.conv1(x))
+        out = self.relu2(self.conv2(out))
 
-        out1 = self.residualA(out)
-        out2 = self.residualB(out1)
-        out3 = self.residualC(out2)
+        out1 = self.convReluA(out)
+        out2 = self.convReluB(out1)
+        out3 = self.convReluC(out2)
 
-        recon1 = self.recon(out1)
-        recon2 = self.recon(out2)
-        recon3 = self.recon(out3)
+        convRelu1 = self.convRelu256(out1)
+        convRelu2 = self.convRelu256(out2)
+        convRelu3 = self.convRelu256(out3)
 
-        out = torch.cat([recon1, recon2, recon3], 1)
-        out = self.relu3(self.conv_mid(out))
+        out = torch.cat([convRelu1, convRelu2, convRelu3], 1)
+        out = self.relu3(self.conv3(out))
         residual2 = out
-        out = self.relu4(self.conv_mid2(out))
+        out = self.relu4(self.conv4(out))
         out = torch.add(out, residual2)
 
         out = self.subpixel(out)
