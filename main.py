@@ -13,6 +13,8 @@ from Model import CustomModel
 from DecryptionModel import DecryptionModel
 from DataLoader import LoadImages
 
+from CustomModel2 import CustomModel2
+
 
 def adjust_learning_rate(optimizer, epoch):
     """Sets the learning rate to the initial LR divided by 2 every 3 epochs"""
@@ -40,7 +42,7 @@ def eval(model, device, dataset_evaluated, batch_size, nb_image_to_print):
             elapsed_time = time.time() - start_time
             avg_elapsed_time += elapsed_time
             val = torch.abs(labels - out_pred).sum().cpu()
-            if i<nb_image_to_print:
+            if i < nb_image_to_print:
                 fig, axes = plt.subplots(nrows=1, ncols=3, sharex=True, sharey=True, figsize=(12, 4))
                 idx = 1
                 ax = fig.add_subplot(1, 3, idx, xticks=[], yticks=[])
@@ -60,7 +62,6 @@ def eval(model, device, dataset_evaluated, batch_size, nb_image_to_print):
             print("Moyenne du batch par image: " + str(val / batch_size))
             general_avg = general_avg + (val / batch_size)
     print("Moyenne general d'une image sur le dataset évalué: " + str(general_avg / i))
-
 
 
 def train_optim(model, device, epochs, log_frequency, learning_rate=1e-4):
@@ -93,7 +94,7 @@ def train_optim(model, device, epochs, log_frequency, learning_rate=1e-4):
 
             if batch_id % log_frequency == 0:
                 print(
-                    "epoch: {:03d}, batch: {:03d}, loss: {:.3f}, time: {:.3f}".format(epoch + 1, batch_id + 1,
+                    "epoch: {:03d}, batch: {:03d}, loss: {:.12f}, time: {:.3f}".format(epoch + 1, batch_id + 1,
                                                                                       loss.item(),
                                                                                       time.time() - start))
 
@@ -103,23 +104,22 @@ def train_optim(model, device, epochs, log_frequency, learning_rate=1e-4):
             optimizer.step()  # update the model parameters using the gradient
 
 
-
-
 if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(1234)
     o_dataset = "./dataset/train_original_tiny.npy"
-    t_dataset = "./dataset/train_2_tiny.npy"
+    t_dataset = "./dataset/train_1A_tiny.npy"
     dataset = LoadImages(t_dataset, o_dataset)
-    batch_size = 16
+    batch_size = 4
     # dataloader = DataLoader(dataset, batch_size, shuffle=True)
     trainloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=2)
     testloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=2)
-    model = CustomModel()
+    # model = CustomModel()
+    model = CustomModel2()
     nb_epoch = 3
     log_frequency = 10
     learning_rate = 1e-4
-    model.load_state_dict(torch.load("./modeltrained/modelTrained_2_Tiny_3epoch.pt"))
-    #train_optim(model, device, nb_epoch, log_frequency, learning_rate)
-    #torch.save(model.state_dict(), './modeltrained/modelTrained_2_Tiny_3epoch.pt')
+    # model.load_state_dict(torch.load("./modeltrained/modelTrained_2_Tiny_3epoch.pt"))
+    train_optim(model, device, nb_epoch, log_frequency, learning_rate)
+    torch.save(model.state_dict(), './modeltrained/modelTrained_2_Tiny_3epoch.pt')
     eval(model, device, testloader, batch_size, 10)
