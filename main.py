@@ -27,6 +27,8 @@ def adjust_learning_rate(optimizer, epoch):
 
 
 def eval(model, device, dataset_evaluated, batch_size, nb_image_to_print):
+    if nb_image_to_print > batch_size:
+        nb_image_to_print=batch_size
     model.to(device)
     model.eval()
     with torch.no_grad():
@@ -119,7 +121,7 @@ if __name__ == '__main__':
     nb_epoch = 3
     log_frequency = 10
     learning_rate = 1e-4
-    # model.load_state_dict(torch.load("./modeltrained/modelTrained_2_Tiny_3epoch.pt"))
-    train_optim(model, device, nb_epoch, log_frequency, learning_rate)
-    torch.save(model.state_dict(), './modeltrained/modelTrained_2_Tiny_3epoch.pt')
+    model.load_state_dict(torch.load("./modeltrained/modelTrained_2_Tiny_3epoch.pt"))
+    #train_optim(model, device, nb_epoch, log_frequency, learning_rate)
+    #torch.save(model.state_dict(), './modeltrained/modelTrained_2_Tiny_3epoch.pt')
     eval(model, device, testloader, batch_size, 10)
