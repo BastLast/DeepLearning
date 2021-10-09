@@ -137,7 +137,20 @@ if __name__ == '__main__':
     valloader = DataLoader(val_set, batch_size, shuffle=True)
     trainloader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=2)
     testloader = DataLoader(dataset_test, batch_size=batch_size, shuffle=False, num_workers=2)
-    model = DecryptionModel()
+    mille = torch.ones(96, 96, dtype=torch.float32)
+    mille = mille.add(1000)
+    mille = torch.stack(
+        (mille, mille, mille, mille, mille, mille, mille, mille, mille,
+         mille, mille, mille, mille,
+         mille, mille, mille,))
+    centmille = torch.ones(96, 96, dtype=torch.float32)
+    centmille = centmille.add(1000)
+    centmille = torch.stack(
+        (centmille, centmille, centmille, centmille, centmille, centmille, centmille,
+         centmille,
+         centmille, centmille, centmille, centmille, centmille,
+         centmille, centmille, centmille,))
+    model = DecryptionModel(mille.cuda(), centmille.cuda())
     nb_epoch = 3
     log_frequency = 10
     learning_rate = 1e-4
