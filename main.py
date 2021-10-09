@@ -61,8 +61,8 @@ def eval(model, device, dataset_evaluated, batch_size, nb_image_to_print):
                 idx += 1
                 plt.show()
             print("Metric for a batch: " + str(val.item()) + "loss:{:.12f}", loss.item())
-            print("Moyenne du batch par image: " + str(val.item() / batch_size))
-            general_avg = general_avg + (val.item() / batch_size)
+            print("Moyenne du batch par image: " + str(val.item() / images.size()[0]))
+            general_avg = general_avg + (val.item() / images.size()[0])
     print("Moyenne general d'une image sur le dataset évalué: " + str(general_avg / i))
 
 
@@ -126,8 +126,8 @@ if __name__ == '__main__':
     torch.manual_seed(1234)
     o_dataset_test = "./dataset/test_original.npy"
     t_dataset_test = "./dataset/test_2.npy"
-    o_dataset = "./dataset/train_original_tiny.npy"
-    t_dataset = "./dataset/train_2_tiny.npy"
+    o_dataset = "./dataset/train_original.npy"
+    t_dataset = "./dataset/train_2.npy"
     dataset = LoadImages(t_dataset, o_dataset)
     dataset_test = LoadImages(t_dataset_test, o_dataset_test)
     trainsize = int(len(dataset) * 80 / 100)
@@ -138,10 +138,10 @@ if __name__ == '__main__':
     trainloader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=2)
     testloader = DataLoader(dataset_test, batch_size=batch_size, shuffle=False, num_workers=2)
     model = DecryptionModel()
-    nb_epoch = 3
-    log_frequency = 10
+    nb_epoch = 1
+    log_frequency = 100
     learning_rate = 1e-4
-    # model.load_state_dict(torch.load("./modeltrained/1A_Tiny_3epoch_model.pt"))
-    train_optim(model, device, nb_epoch, log_frequency, learning_rate)
-    # torch.save(model.state_dict(), './modeltrained/1A_Tiny_3epoch_model.pt')
-    eval(model, device, testloader, batch_size, 10)
+    model.load_state_dict(torch.load("./modeltrained/2complet_20epoch.pt"))
+    # train_optim(model, device, nb_epoch, log_frequency, learning_rate)
+    # torch.save(model.state_dict(), './modeltrained/2complet_20epoch.pt')
+    eval(model, device, testloader, batch_size, 0)
